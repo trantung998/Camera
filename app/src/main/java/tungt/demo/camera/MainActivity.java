@@ -244,6 +244,7 @@ public class MainActivity extends ActionBarActivity {
 
     protected List<Camera.Size> mPreviewSizeList;
     protected List<Camera.Size> mPictureSizeList;
+
     public void onResume() {
         super.onResume();
         if (!hasCamera(mContext)) {
@@ -264,6 +265,7 @@ public class MainActivity extends ActionBarActivity {
             Camera.Parameters cameraParams = mCamera.getParameters();
             mPreviewSizeList = cameraParams.getSupportedPreviewSizes();
             mPictureSizeList = cameraParams.getSupportedPictureSizes();
+
             for (int i = 0; i < mPictureSizeList.size(); i++) {
                 Log.d("picture size support", "width: " + mPictureSizeList.get(i).width + " height: "+ mPictureSizeList.get(i).height);
             }
@@ -271,6 +273,7 @@ public class MainActivity extends ActionBarActivity {
             for (int i = 0; i < mPictureSizeList.size(); i++) {
                 Log.d("mPreviewSizeList", "width: " + mPreviewSizeList.get(i).width + " height: "+ mPreviewSizeList.get(i).height);
             }
+
         }
     }
 }
