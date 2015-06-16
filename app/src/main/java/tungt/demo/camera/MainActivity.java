@@ -3,7 +3,6 @@ package tungt.demo.camera;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.media.ExifInterface;
 import android.os.AsyncTask;
@@ -13,7 +12,6 @@ import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.Surface;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
@@ -27,7 +25,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -86,7 +83,6 @@ public class MainActivity extends ActionBarActivity {
 
                 releaseCamera();
                 chooseCamera();
-                mPreview.setIsFront(cameraFront);
             } else {
                 Toast toast = Toast.makeText(mContext, "Sorry, your phone has only one camera!", Toast.LENGTH_LONG);
                 toast.show();
@@ -141,10 +137,11 @@ public class MainActivity extends ActionBarActivity {
                 //open the backFacingCamera
                 //set a picture callback
                 //refresh the preview
-
+                mPreview.setIsFront(false);
                 mCamera = Camera.open(cameraId);
                 mPicture = getPictureCallback();
                 mPreview.refreshCamera(mCamera);
+
             }
         } else {
             int cameraId = findFrontCamera();
@@ -152,10 +149,11 @@ public class MainActivity extends ActionBarActivity {
                 //open the backFacingCamera
                 //set a picture callback
                 //refresh the preview
-
+                mPreview.setIsFront(true);
                 mCamera = Camera.open(cameraId);
                 mPicture = getPictureCallback();
                 mPreview.refreshCamera(mCamera);
+
             }
         }
     }

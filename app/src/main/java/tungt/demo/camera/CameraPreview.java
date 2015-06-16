@@ -3,7 +3,6 @@ package tungt.demo.camera;
 import android.app.Activity;
 import android.hardware.Camera;
 import android.util.Log;
-import android.view.Display;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -84,44 +83,52 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     protected void configureCameraParameters() {
         int angle;
-        Display display = mActivity.getWindowManager().getDefaultDisplay();
-        switch (display.getRotation()) {
+        int degrees = 0;
+        int rotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
+        Log.d("rotation" , rotation+ "");
+        switch (rotation) {
             case Surface.ROTATION_0: // This is display orientation
                 angle = 90; // This is camera orientation
+                degrees = 270;
                 break;
             case Surface.ROTATION_90:
                 angle = 0;
+                degrees = 180;
                 break;
             case Surface.ROTATION_180:
                 angle = 270;
+                degrees = 90;
                 break;
             case Surface.ROTATION_270:
                 angle = 180;
+                degrees = 0;
                 break;
             default:
                 angle = 90;
                 break;
         }
-        mCamera.setDisplayOrientation(angle);
 
+
+
+        Camera.Parameters params = mCamera.getParameters();
         Camera.CameraInfo info = new Camera.CameraInfo();
         int cameraside = (isFront)?Camera.CameraInfo.CAMERA_FACING_FRONT:Camera.CameraInfo.CAMERA_FACING_BACK;
         Camera.getCameraInfo(cameraside, info);
-        int rotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
-        Log.d("rotation", ": " + rotation);
-        int degrees = 0;
-
-        switch (rotation) {
-            case Surface.ROTATION_0: degrees   = 90; break; //Natural orientation
-            case Surface.ROTATION_90: degrees  = 0; break; //Landscape left
-            case Surface.ROTATION_180: degrees = 270; break;//Upside down
-            case Surface.ROTATION_270: degrees = 180; break;//Landscape right
+        Log.d("info.orientation", info.orientation + "");
+        Log.d("info.facing", info.facing + "");
+        int result;
+        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT)
+        {
+//            result = (info.orientation + degrees) % 360;
+//            result = (360 - result) % 360; // compensate the mirror
+            params.setRotation(degrees);
         }
-        int rotate = (info.orientation - degrees + 360) % 360;
-        Camera.Parameters params = mCamera.getParameters();
-//        params.setRotation(degrees);
-//        params.setPictureSize(300,300);
-//        params.setPreviewSize(300,300);
+        else
+        { // back-facing
+//            result = (info.orientation - degrees + 360) % 360;
+            params.setRotation(angle);
+        }
+        mCamera.setDisplayOrientation(angle);
         mCamera.setParameters(params);
     //test
 //        Camera.Parameters cameraParams = mCamera.getParameters();
