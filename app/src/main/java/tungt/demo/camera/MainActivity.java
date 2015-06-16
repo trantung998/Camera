@@ -6,6 +6,7 @@ import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.Surface;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
@@ -55,6 +56,8 @@ public class MainActivity extends ActionBarActivity {
 
         btnCameraSettings = (ImageView)findViewById(R.id.button_settings);
         btnCameraSettings.setOnClickListener(settingCameraOnClickListener);
+
+        initCamera();
     }
 
     //================== Button Click Listener =====================//
@@ -247,11 +250,15 @@ public class MainActivity extends ActionBarActivity {
 
     public void onResume() {
         super.onResume();
+    }
+
+    private void initCamera(){
         if (!hasCamera(mContext)) {
             Toast toast = Toast.makeText(mContext, "Sorry, your phone does not have a camera!", Toast.LENGTH_LONG);
             toast.show();
             finish();
         }
+
         if (mCamera == null) {
             //if the front facing camera does not exist
             if (findFrontCamera() < 0) {
@@ -273,7 +280,6 @@ public class MainActivity extends ActionBarActivity {
             for (int i = 0; i < mPictureSizeList.size(); i++) {
                 Log.d("mPreviewSizeList", "width: " + mPreviewSizeList.get(i).width + " height: "+ mPreviewSizeList.get(i).height);
             }
-
         }
     }
 }
