@@ -1,11 +1,18 @@
 package tungt.demo.camera;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.hardware.Camera;
+import android.media.ExifInterface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.Surface;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -57,7 +64,7 @@ public class MainActivity extends ActionBarActivity {
         btnCameraSettings = (ImageView)findViewById(R.id.button_settings);
         btnCameraSettings.setOnClickListener(settingCameraOnClickListener);
 
-        initCamera();
+        refreshCamera();
     }
 
     //================== Button Click Listener =====================//
@@ -79,6 +86,7 @@ public class MainActivity extends ActionBarActivity {
 
                 releaseCamera();
                 chooseCamera();
+                mPreview.setIsFront(cameraFront);
             } else {
                 Toast toast = Toast.makeText(mContext, "Sorry, your phone has only one camera!", Toast.LENGTH_LONG);
                 toast.show();
@@ -86,10 +94,42 @@ public class MainActivity extends ActionBarActivity {
         }
     };
 
+    AlertDialog levelDialog;
+    int currentQuality = 0;
     OnClickListener settingCameraOnClickListener = new OnClickListener() {
         @Override
         public void onClick(View v) {
+            //cần sửa lại để tự động setup các giá trị này
+            final CharSequence[] items = {"SD(640x480)","HD(1280x720)","FHD(1920x1080)","Max(4128*3096)"};
+            // Creating and Building the Dialog
+            AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+            builder.setTitle("Select The Image Quality");
 
+            builder.setSingleChoiceItems(items, currentQuality, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int item) {
+                    currentQuality = item;
+                    switch(item)
+                    {
+                        case 0:
+                            // Your code when first option seletced
+                            break;
+                        case 1:
+                            // Your code when 2nd  option seletced
+
+                            break;
+                        case 2:
+                            // Your code when 3rd option seletced
+                            break;
+                        case 3:
+                            // Your code when 4th  option seletced
+                            break;
+
+                    }
+                    levelDialog.dismiss();
+                }
+            });
+            levelDialog = builder.create();
+            levelDialog.show();
         }
     };
 
@@ -129,28 +169,66 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
                 //make a new picture file
-                File pictureFile = getOutputMediaFile();
 
-                if (pictureFile == null) {
-                    return;
-                }
-                try {
-                    //write the file
-                    FileOutputStream fos = new FileOutputStream(pictureFile);
-                    fos.write(data);
-                    fos.close();
-                    Toast toast = Toast.makeText(mContext, "Picture saved: " + pictureFile.getName(), Toast.LENGTH_LONG);
-                    toast.show();
+                    AsyncTask<byte[], Void, Boolean> task = new AsyncTask<byte[], Void, Boolean>() {
 
-                } catch (FileNotFoundException e) {
-                } catch (IOException e) {
-                }
+                        @Override
+                        protected Boolean doInBackground(byte[]... params) {
+                            Boolean saved = writeToDisk(params[0]); //Your write code
+                            return saved;
+                        }
+
+                        @Override
+                        protected void onPostExecute(Boolean saved) {
+                            if (saved) {
+                                Toast.makeText(mContext, "Picture saved", Toast.LENGTH_LONG).show();
+                                ExifInterface ei = null;
+                                try {
+                                    ei = new ExifInterface(lastImagePath);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                                int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+                                Log.d("sdasd:", orientation + "");
+                                //HANDLE SUCCESS
+                            } else {
+                                Toast.makeText(mContext,"Error on save", Toast.LENGTH_LONG).show();
+                                //HANDLE ERROR
+                            }
+                        }
+                    };
+
+                    task.execute(data);
 
                 //refresh camera to continue preview
                 mPreview.refreshCamera(mCamera);
             }
         };
         return picture;
+    }
+    private String lastImagePath = "";
+    private boolean writeToDisk(byte[] data){
+        boolean saved = false;
+
+        try {
+            File pictureFile = getOutputMediaFile();
+            if (pictureFile == null) {
+                lastImagePath = pictureFile.getPath();
+                return saved;
+            }
+            //write the file
+            FileOutputStream fos = new FileOutputStream(pictureFile);
+            fos.write(data);
+            fos.close();
+            saved = true;
+        }
+        catch (FileNotFoundException e) {
+            saved = false;
+        }
+        catch (IOException e) {
+            saved =  false;
+        }
+        return saved;
     }
 
     /**
@@ -245,14 +323,12 @@ public class MainActivity extends ActionBarActivity {
         releaseCamera();
     }
 
-    protected List<Camera.Size> mPreviewSizeList;
-    protected List<Camera.Size> mPictureSizeList;
-
     public void onResume() {
         super.onResume();
+        refreshCamera();
     }
 
-    private void initCamera(){
+    private void refreshCamera(){
         if (!hasCamera(mContext)) {
             Toast toast = Toast.makeText(mContext, "Sorry, your phone does not have a camera!", Toast.LENGTH_LONG);
             toast.show();
@@ -269,17 +345,32 @@ public class MainActivity extends ActionBarActivity {
             mCamera = Camera.open(findBackCamera());
             mPicture = getPictureCallback();
             mPreview.refreshCamera(mCamera);
-            Camera.Parameters cameraParams = mCamera.getParameters();
-            mPreviewSizeList = cameraParams.getSupportedPreviewSizes();
-            mPictureSizeList = cameraParams.getSupportedPictureSizes();
-
-            for (int i = 0; i < mPictureSizeList.size(); i++) {
-                Log.d("picture size support", "width: " + mPictureSizeList.get(i).width + " height: "+ mPictureSizeList.get(i).height);
-            }
-
-            for (int i = 0; i < mPictureSizeList.size(); i++) {
-                Log.d("mPreviewSizeList", "width: " + mPreviewSizeList.get(i).width + " height: "+ mPreviewSizeList.get(i).height);
-            }
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    void changeImageQuality(){
+
     }
 }

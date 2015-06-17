@@ -1,0 +1,23 @@
+06-16 11:32:55.891  23378-23378/tungt.demo.camera D/picture size support? width: 4128 height: 3096
+06-16 11:32:55.891  23378-23378/tungt.demo.camera D/picture size support? width: 4128 height: 2322
+06-16 11:32:55.891  23378-23378/tungt.demo.camera D/picture size support? width: 3264 height: 2448
+06-16 11:32:55.891  23378-23378/tungt.demo.camera D/picture size support? width: 3264 height: 1836
+06-16 11:32:55.891  23378-23378/tungt.demo.camera D/picture size support? width: 2560 height: 1920
+06-16 11:32:55.891  23378-23378/tungt.demo.camera D/picture size support? width: 2048 height: 1536
+06-16 11:32:55.891  23378-23378/tungt.demo.camera D/picture size support? width: 2048 height: 1152
+06-16 11:32:55.891  23378-23378/tungt.demo.camera D/picture size support? width: 1920 height: 1080
+06-16 11:32:55.891  23378-23378/tungt.demo.camera D/picture size support? width: 1280 height: 960
+06-16 11:32:55.891  23378-23378/tungt.demo.camera D/picture size support? width: 1280 height: 720
+06-16 11:32:55.891  23378-23378/tungt.demo.camera D/picture size support? width: 640 height: 480
+
+06-16 11:32:55.891  23378-23378/tungt.demo.camera D/mPreviewSizeList? width: 1920 height: 1080
+06-16 11:32:55.891  23378-23378/tungt.demo.camera D/mPreviewSizeList? width: 1440 height: 1080
+06-16 11:32:55.891  23378-23378/tungt.demo.camera D/mPreviewSizeList? width: 1280 height: 720
+06-16 11:32:55.891  23378-23378/tungt.demo.camera D/mPreviewSizeList? width: 1056 height: 864
+06-16 11:32:55.891  23378-23378/tungt.demo.camera D/mPreviewSizeList? width: 960 height: 720
+06-16 11:32:55.891  23378-23378/tungt.demo.camera D/mPreviewSizeList? width: 800 height: 480
+06-16 11:32:55.891  23378-23378/tungt.demo.camera D/mPreviewSizeList? width: 720 height: 480
+06-16 11:32:55.891  23378-23378/tungt.demo.camera D/mPreviewSizeList? width: 640 height: 480
+06-16 11:32:55.891  23378-23378/tungt.demo.camera D/mPreviewSizeList? width: 352 height: 288
+PreviewSizeList? width: 320 height: 240
+PreviewSizeList? width: 176 height: 144

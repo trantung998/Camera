@@ -9,6 +9,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by user on 6/14/2015.
@@ -18,6 +19,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private Camera mCamera;
     private Activity mActivity;
     private Camera.Size mPreviewSize;
+
+    private boolean isFront = false;
 
     public CameraPreview(Camera mCamera, Activity mActivity) {
         super(mActivity);
@@ -76,42 +79,69 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
     }
 
+    protected List<Camera.Size> mPreviewSizeList;
+    protected List<Camera.Size> mPictureSizeList;
+
     protected void configureCameraParameters() {
-            int angle;
-            Display display = mActivity.getWindowManager().getDefaultDisplay();
-            switch (display.getRotation()) {
-                case Surface.ROTATION_0: // This is display orientation
-                    angle = 90; // This is camera orientation
-                    break;
-                case Surface.ROTATION_90:
-                    angle = 0;
-                    break;
-                case Surface.ROTATION_180:
-                    angle = 270;
-                    break;
-                case Surface.ROTATION_270:
-                    angle = 180;
-                    break;
-                default:
-                    angle = 90;
-                    break;
-            }
-            mCamera.setDisplayOrientation(angle);
-
-            Camera.CameraInfo info = new Camera.CameraInfo();
-            Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, info);
-            int rotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
-            int degrees = 0;
-
-            switch (rotation) {
-                case Surface.ROTATION_0: degrees = 0; break; //Natural orientation
-                case Surface.ROTATION_90: degrees = 90; break; //Landscape left
-                case Surface.ROTATION_180: degrees = 180; break;//Upside down
-                case Surface.ROTATION_270: degrees = 270; break;//Landscape right
-            }
-            int rotate = (info.orientation - degrees + 360) % 360;
-            Camera.Parameters params = mCamera.getParameters();
-            params.setRotation(rotate);
-            mCamera.setParameters(params);
+        int angle;
+        Display display = mActivity.getWindowManager().getDefaultDisplay();
+        switch (display.getRotation()) {
+            case Surface.ROTATION_0: // This is display orientation
+                angle = 90; // This is camera orientation
+                break;
+            case Surface.ROTATION_90:
+                angle = 0;
+                break;
+            case Surface.ROTATION_180:
+                angle = 270;
+                break;
+            case Surface.ROTATION_270:
+                angle = 180;
+                break;
+            default:
+                angle = 90;
+                break;
         }
+        mCamera.setDisplayOrientation(angle);
+
+        Camera.CameraInfo info = new Camera.CameraInfo();
+        int cameraside = (isFront)?Camera.CameraInfo.CAMERA_FACING_FRONT:Camera.CameraInfo.CAMERA_FACING_BACK;
+        Camera.getCameraInfo(cameraside, info);
+        int rotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
+        Log.d("rotation", ": " + rotation);
+        int degrees = 0;
+
+        switch (rotation) {
+            case Surface.ROTATION_0: degrees   = 90; break; //Natural orientation
+            case Surface.ROTATION_90: degrees  = 0; break; //Landscape left
+            case Surface.ROTATION_180: degrees = 270; break;//Upside down
+            case Surface.ROTATION_270: degrees = 180; break;//Landscape right
+        }
+        int rotate = (info.orientation - degrees + 360) % 360;
+        Camera.Parameters params = mCamera.getParameters();
+//        params.setRotation(degrees);
+//        params.setPictureSize(300,300);
+//        params.setPreviewSize(300,300);
+        mCamera.setParameters(params);
+    //test
+//        Camera.Parameters cameraParams = mCamera.getParameters();
+//        mPreviewSizeList = cameraParams.getSupportedPreviewSizes();
+//        mPictureSizeList = cameraParams.getSupportedPictureSizes();
+
+//        for (int i = 0; i < mPictureSizeList.size(); i++) {
+//            Log.d("picture size support", "width: " + mPictureSizeList.get(i).width + " height: "+ mPictureSizeList.get(i).height);
+//        }
+//
+//        for (int i = 0; i < mPictureSizeList.size(); i++) {
+//            Log.d("mPreviewSizeList", "width: " + mPreviewSizeList.get(i).width + " height: "+ mPreviewSizeList.get(i).height);
+//        }
+    }
+
+    public boolean isFront() {
+        return isFront;
+    }
+
+    public void setIsFront(boolean isFront) {
+        this.isFront = isFront;
+    }
 }
