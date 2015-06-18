@@ -3,21 +3,17 @@ package tungt.demo.camera;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
+import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.hardware.Camera;
 import android.media.ExifInterface;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -40,15 +36,18 @@ public class CameraActivity extends Activity{
 
     private Camera mCamera;
     private CameraPreview mPreview;
-    private Camera.PictureCallback mPicture;
+    private Camera.PictureCallback mIpgPictureCallback;
+
     private ImageView btnCapture, btnSwitchCamera, btnCameraSettings;
     private Context mContext;
     private LinearLayout cameraPreview;
     private boolean cameraFront = false;
 
+    private AlertDialog imgaeQualityDialog;
+    private int currentQuality = 0;
+
     protected List<Camera.Size> mPreviewSizeList;
     protected List<Camera.Size> mPictureSizeList;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,12 +55,6 @@ public class CameraActivity extends Activity{
         setContentView(R.layout.activity_main);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         init();
-    }
-
-    @Override
-    protected void onDestroy()  {
-        Log.d("onDestroy", "");
-        super.onDestroy();
     }
 
     //====================init=====================//
@@ -82,19 +75,24 @@ public class CameraActivity extends Activity{
         btnCameraSettings = (ImageView)findViewById(R.id.button_settings);
         btnCameraSettings.setOnClickListener(settingCameraOnClickListener);
         refreshCamera();
-        Camera.Parameters cameraParams = mCamera.getParameters();
-        mPreviewSizeList = cameraParams.getSupportedPreviewSizes();
-        mPictureSizeList = cameraParams.getSupportedPictureSizes();
 
         DrawingView drawingView = (DrawingView)findViewById(R.id.drawing_surface);
         mPreview.setDrawingView(drawingView);
     }
 
+    @Override
+    protected void onDestroy()  {
+        Log.d("onDestroy", "");
+        super.onDestroy();
+    }
+
+
+
     //================== Button Click Listener =====================//
     View.OnClickListener captureOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            mCamera.takePicture(null,null,mPicture);
+            mCamera.takePicture(null,null, mIpgPictureCallback);
         }
     };
 
@@ -106,18 +104,14 @@ public class CameraActivity extends Activity{
             if (camerasNumber > 1) {
                 //release the old camera instance
                 //switch camera, from the front and the back and vice versa
-
                 releaseCamera();
                 chooseCamera();
             } else {
-                Toast toast = Toast.makeText(mContext, "Sorry, your phone has only one camera!", Toast.LENGTH_LONG);
-                toast.show();
+                Toast.makeText(mContext, "Sorry, your phone has only one camera!", Toast.LENGTH_LONG).show();
             }
         }
     };
 
-    AlertDialog levelDialog;
-    int currentQuality = 0;
     View.OnClickListener settingCameraOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -126,33 +120,15 @@ public class CameraActivity extends Activity{
             // Creating and Building the Dialog
             AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
             builder.setTitle("Select The Image Quality");
-
             builder.setSingleChoiceItems(items, currentQuality, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int item) {
                     currentQuality = item;
-//                    switch(item)
-//                    {
-//                        case 0:
-//                            // Your code when first option seletced
-//                            break;
-//                        case 1:
-//                            // Your code when 2nd  option seletced
-//
-//                            break;
-//                        case 2:
-//                            // Your code when 3rd option seletced
-//                            break;
-//                        case 3:
-//                            // Your code when 4th  option seletced
-//                            break;
-//
-//                    }
                     changeImageQuality();
-                    levelDialog.dismiss();
+                    imgaeQualityDialog.dismiss();
                 }
             });
-            levelDialog = builder.create();
-            levelDialog.show();
+            imgaeQualityDialog = builder.create();
+            imgaeQualityDialog.show();
         }
     };
 
@@ -197,47 +173,23 @@ public class CameraActivity extends Activity{
 
     public void chooseCamera() {
         //if the camera preview is the front
+        int cameraId;
         if (cameraFront) {
-            int cameraId = findBackCamera();
-            if (cameraId >= 0) {
-                //open the backFacingCamera
-                //set a picture callback
-                //refresh the preview
-                mPreview.setIsFront(false);
-                mCamera = Camera.open(cameraId);
-
-                Camera.Parameters params = mCamera.getParameters();
-                if (params.getSupportedFocusModes().contains(
-                        Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
-                    params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
-                }
-                mCamera.setParameters(params);
-
-                mPicture = getPictureCallback();
-                mPreview.refreshCamera(mCamera);
-
-            }
+            cameraFront = false;
+            cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
         } else {
-            int cameraId = findFrontCamera();
-            if (cameraId >= 0) {
-                //open the backFacingCamera
-                //set a picture callback
-                //refresh the preview
-                mPreview.setIsFront(true);
-                mCamera = Camera.open(cameraId);
-
-                Camera.Parameters params = mCamera.getParameters();
-                if (params.getSupportedFocusModes().contains(
-                        Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
-                    params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
-                }
-                mCamera.setParameters(params);
-
-                mPicture = getPictureCallback();
-                mPreview.refreshCamera(mCamera);
-
+            cameraFront = true;
+            cameraId = findFrontCamera();
+            if(cameraId < 0)// truong hop chac ko xay ra
+            {
+                cameraFront = false;
+                cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
             }
         }
+        mPreview.setIsFront(false);
+        mCamera = Camera.open(cameraId);
+        mIpgPictureCallback = getPictureCallback();
+        mPreview.refreshCamera(mCamera);
     }
 
     /**
@@ -341,19 +293,11 @@ public class CameraActivity extends Activity{
     /**
      * @return CameraId: id of front camera, return -1 if device have no front camera
      */
+    private boolean isDeviceHaveFrontCamera = false;
     private int findFrontCamera(){
-        int cameraId = -1;
-        // Search for the front facing camera
-        int numberOfCameras = Camera.getNumberOfCameras();
-        for (int i = 0; i < numberOfCameras; i++) {
-            Camera.CameraInfo info = new Camera.CameraInfo();
-            Camera.getCameraInfo(i, info);
-            if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                cameraId = i;
-                cameraFront = true;
-                break;
-            }
-        }
+        if(isDeviceHaveFrontCamera) return Camera.CameraInfo.CAMERA_FACING_FRONT;
+        int cameraId = findCamera(Camera.CameraInfo.CAMERA_FACING_FRONT);
+        if(cameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) isDeviceHaveFrontCamera = true;
         return cameraId;
     }
 
@@ -361,29 +305,36 @@ public class CameraActivity extends Activity{
      * @return CameraId: id of back camera, return -1 if device have no back camera
      */
     private int findBackCamera(){
+        return findCamera(Camera.CameraInfo.CAMERA_FACING_BACK);
+    }
+
+    private int findCamera(int cId){
         int cameraId = -1;
         // Search for the front facing camera
         int numberOfCameras = Camera.getNumberOfCameras();
         for (int i = 0; i < numberOfCameras; i++) {
             Camera.CameraInfo info = new Camera.CameraInfo();
             Camera.getCameraInfo(i, info);
-            if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
+            if (info.facing == cId) {
                 cameraId = i;
-                cameraFront = false;
                 break;
             }
         }
         return cameraId;
     }
 
+
+
     /**
      * check camera
      * @param context
-     * @return
+     * @return Check camera device
      */
+    private boolean isCameraCheced = false;
     private boolean hasCamera(Context context) {
         //check if the device has camera
         if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+            isCameraCheced = true;
             return true;
         } else {
             return false;
@@ -416,40 +367,48 @@ public class CameraActivity extends Activity{
     }
 
     private void refreshCamera(){
-        if (!hasCamera(mContext)) {
-            Toast toast = Toast.makeText(mContext, "Sorry, your phone does not have a camera!", Toast.LENGTH_LONG);
-            toast.show();
-            finish();
+        if(!isCameraCheced){
+            if (!hasCamera(mContext)) {
+                Toast toast = Toast.makeText(mContext, "Sorry, your phone does not have a camera!", Toast.LENGTH_LONG);
+                toast.show();
+                finish();
+            }
         }
+        else{
+            if (mCamera == null) {
+                //if the front facing camera does not exist
+                if (findFrontCamera() < 0) {
+                    Toast.makeText(this, "No front facing camera found.", Toast.LENGTH_LONG).show();
+                    btnSwitchCamera.setVisibility(View.GONE);
+                }
 
-        if (mCamera == null) {
-            //if the front facing camera does not exist
-            if (findFrontCamera() < 0) {
-                Toast.makeText(this, "No front facing camera found.", Toast.LENGTH_LONG).show();
-                btnSwitchCamera.setVisibility(View.GONE);
+                mCamera = Camera.open(findBackCamera());
+                Camera.Parameters parameters =  mCamera.getParameters();
+                mPreviewSizeList = parameters.getSupportedPreviewSizes();
+                mPictureSizeList = parameters.getSupportedPictureSizes();
+                Camera.Size pictureSize = mPictureSizeList.get(0);
+                parameters.setJpegQuality(100);
+                parameters.setJpegThumbnailQuality(75);
+                parameters.setPreviewFpsRange(30, 35);
+                parameters.setAntibanding(Camera.Parameters.ANTIBANDING_AUTO);
+                parameters.setPictureFormat(ImageFormat.JPEG);
+                parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+                parameters.setPictureSize(pictureSize.width, pictureSize.height);
+
+                if (parameters.getMaxNumMeteringAreas() > 0){ // check that metering areas are supported
+                    List<Camera.Area> meteringAreas = new ArrayList<>();
+
+                    Rect areaRect1 = new Rect(-100, -100, 100, 100);    // specify an area in center of image
+                    meteringAreas.add(new Camera.Area(areaRect1, 600)); // set weight to 60%
+                    Rect areaRect2 = new Rect(800, -1000, 1000, -800);  // specify an area in upper right of image
+                    meteringAreas.add(new Camera.Area(areaRect2, 400)); // set weight to 40%
+                    parameters.setMeteringAreas(meteringAreas);
+                }
+
+                mCamera.setParameters(parameters);
+                mIpgPictureCallback = getPictureCallback();
+                mPreview.refreshCamera(mCamera);
             }
-
-            mCamera = Camera.open(findBackCamera());
-            Camera.Parameters parameters =  mCamera.getParameters();
-            parameters.setJpegQuality(100);
-            parameters.setJpegThumbnailQuality(75);
-            parameters.setPreviewFpsRange(30, 35);
-            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-
-            if (parameters.getMaxNumMeteringAreas() > 0){ // check that metering areas are supported
-                List<Camera.Area> meteringAreas = new ArrayList<Camera.Area>();
-
-                Rect areaRect1 = new Rect(-100, -100, 100, 100);    // specify an area in center of image
-                meteringAreas.add(new Camera.Area(areaRect1, 600)); // set weight to 60%
-                Rect areaRect2 = new Rect(800, -1000, 1000, -800);  // specify an area in upper right of image
-                meteringAreas.add(new Camera.Area(areaRect2, 400)); // set weight to 40%
-                parameters.setMeteringAreas(meteringAreas);
-            }
-
-            mCamera.setParameters(parameters);
-
-            mPicture = getPictureCallback();
-            mPreview.refreshCamera(mCamera);
         }
     }
 

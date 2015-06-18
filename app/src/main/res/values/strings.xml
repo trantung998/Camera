@@ -5,6 +5,6 @@
     <string name="action_settings">Chose image from device</string>
     <string name="title_activity_image_review">ImageReviewActivity</string>
 
-    <string name="btn_take_image">Take an image</string>
-    <string name="chose_image">Select from device</string>
+    <string name="btn_take_image">Open Camera</string>
+    <string name="chose_image">Open Gallery</string>
 </resources>

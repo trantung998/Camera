@@ -18,7 +18,6 @@ public class ImageReviewActivity extends ActionBarActivity {
         setContentView(R.layout.activity_image_review);
         mImageReview = (ImageView)findViewById(R.id.imageview);
         imagePath = getIntent().getExtras().getString("imagePath");
-
         Bitmap thumbnail = (BitmapFactory.decodeFile(imagePath));
         mImageReview.setImageBitmap(thumbnail);
     }

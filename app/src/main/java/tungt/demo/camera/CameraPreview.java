@@ -3,18 +3,13 @@ package tungt.demo.camera;
 import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.hardware.Camera;
-import android.os.Handler;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by user on 6/14/2015.
@@ -124,8 +119,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 break;
         }
 
-
-
         Camera.Parameters params = mCamera.getParameters();
         Camera.CameraInfo info = new Camera.CameraInfo();
         int cameraside = (isFront)?Camera.CameraInfo.CAMERA_FACING_FRONT:Camera.CameraInfo.CAMERA_FACING_BACK;
@@ -146,18 +139,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
         mCamera.setDisplayOrientation(angle);
         mCamera.setParameters(params);
-    //test
-//        Camera.Parameters cameraParams = mCamera.getParameters();
-//        mPreviewSizeList = cameraParams.getSupportedPreviewSizes();
-//        mPictureSizeList = cameraParams.getSupportedPictureSizes();
-
-//        for (int i = 0; i < mPictureSizeList.size(); i++) {
-//            Log.d("picture size support", "width: " + mPictureSizeList.get(i).width + " height: "+ mPictureSizeList.get(i).height);
-//        }
-//
-//        for (int i = 0; i < mPictureSizeList.size(); i++) {
-//            Log.d("mPreviewSizeList", "width: " + mPreviewSizeList.get(i).width + " height: "+ mPreviewSizeList.get(i).height);
-//        }
     }
 
     public boolean isFront() {
