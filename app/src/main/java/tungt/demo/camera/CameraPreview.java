@@ -25,17 +25,25 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         super(mActivity);
         this.mCamera = mCamera;
         this.mActivity = mActivity;
+        initHolder();
+
+    }
+
+    void initHolder(){
         this.mHolder = getHolder();
         this.mHolder.addCallback(this);
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
+        Log.d("surfaceCreated","");
+        Log.d("mCamera",""+mCamera);
+        Log.d("holder",""+holder);
 
         try {
         if(mCamera != null){
+
             mCamera.setPreviewDisplay(holder);
             mCamera.startPreview();
         }
@@ -51,7 +59,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-
+        Log.d("surfaceDestroyed","");
     }
 
     public void refreshCamera(Camera camera) {
@@ -77,9 +85,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             Log.d(VIEW_LOG_TAG, "Error starting camera preview: " + e.getMessage());
         }
     }
-
-    protected List<Camera.Size> mPreviewSizeList;
-    protected List<Camera.Size> mPictureSizeList;
 
     protected void configureCameraParameters() {
         int angle;
