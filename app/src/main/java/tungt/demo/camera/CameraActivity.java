@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Rect;
 import android.hardware.Camera;
 import android.media.ExifInterface;
 import android.net.Uri;
@@ -16,6 +17,7 @@ import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -27,6 +29,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -82,6 +85,9 @@ public class CameraActivity extends Activity{
         Camera.Parameters cameraParams = mCamera.getParameters();
         mPreviewSizeList = cameraParams.getSupportedPreviewSizes();
         mPictureSizeList = cameraParams.getSupportedPictureSizes();
+
+        DrawingView drawingView = (DrawingView)findViewById(R.id.drawing_surface);
+        mPreview.setDrawingView(drawingView);
     }
 
     //================== Button Click Listener =====================//
@@ -154,12 +160,9 @@ public class CameraActivity extends Activity{
         Camera.Parameters par = mCamera.getParameters();
 //        Camera.Size previewSize = getOptimalSize();
         Camera.Size pictureSize = mPictureSizeList.get(mPictureSizeList.size() - 1 - currentQuality);
-        Log.d("Size",""+pictureSize.width + ", " + pictureSize.height);
+        Log.d("Size", "" + pictureSize.width + ", " + pictureSize.height);
 //        par.setPreviewSize(previewSize.width, previewSize.height);
         par.setPictureSize(pictureSize.width, pictureSize.height);
-        par.setJpegQuality(100);
-//        par.setJpegThumbnailQuality(75);
-//        par.setPreviewFpsRange(30,35);
         mCamera.setParameters(par);
     }
     private float PREVIEW_SIZE_FACTOR = 1.3f;
@@ -427,6 +430,24 @@ public class CameraActivity extends Activity{
             }
 
             mCamera = Camera.open(findBackCamera());
+            Camera.Parameters parameters =  mCamera.getParameters();
+            parameters.setJpegQuality(100);
+            parameters.setJpegThumbnailQuality(75);
+            parameters.setPreviewFpsRange(30, 35);
+            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+
+            if (parameters.getMaxNumMeteringAreas() > 0){ // check that metering areas are supported
+                List<Camera.Area> meteringAreas = new ArrayList<Camera.Area>();
+
+                Rect areaRect1 = new Rect(-100, -100, 100, 100);    // specify an area in center of image
+                meteringAreas.add(new Camera.Area(areaRect1, 600)); // set weight to 60%
+                Rect areaRect2 = new Rect(800, -1000, 1000, -800);  // specify an area in upper right of image
+                meteringAreas.add(new Camera.Area(areaRect2, 400)); // set weight to 40%
+                parameters.setMeteringAreas(meteringAreas);
+            }
+
+            mCamera.setParameters(parameters);
+
             mPicture = getPictureCallback();
             mPreview.refreshCamera(mCamera);
         }
