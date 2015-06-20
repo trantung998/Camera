@@ -6,7 +6,7 @@ import android.graphics.Bitmap;
  * Created by 9i-tungt on 6/19/2015.
  */
 public class ImageProcess {
-    public static Bitmap lsquareCropv2(Bitmap bm){
+    public static Bitmap squareCropv2(Bitmap bm){
         int width = bm.getWidth();
         int height = bm.getHeight();
         int edgeOfsquare = (width < height) ? width : height;
@@ -22,7 +22,7 @@ public class ImageProcess {
                 top,
                 edgeOfsquare,
                 edgeOfsquare);
-        bm.recycle();
+//        bm.recycle();
         return bm2;
     }
 }

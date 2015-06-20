@@ -4,13 +4,20 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.hardware.Camera;
 import android.media.ExifInterface;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.Menu;
@@ -72,6 +79,7 @@ public class CameraActivity extends Activity{
         mContext = this;
 
         cameraPreview =(LinearLayout)findViewById(R.id.camera_preview);
+
         mPreview =  new CameraPreview(mCamera, this);
         cameraPreview.addView(mPreview);
 
@@ -196,18 +204,19 @@ public class CameraActivity extends Activity{
         int cameraId;
         if (cameraFront) {
             cameraFront = false;
+            mPreview.setIsFront(cameraFront);
             cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
         } else {
             cameraFront = true;
+            mPreview.setIsFront(cameraFront);
             cameraId = findFrontCamera();
-            if(cameraId < 0)// truong hop chac ko xay ra
-            {
+            // truong hop chac ko xay ra
+            if(cameraId < 0) {
                 cameraFront = false;
-                cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
+                mPreview.setIsFront(cameraFront);
+                cameraId    = Camera.CameraInfo.CAMERA_FACING_BACK;
             }
         }
-        mPreview.setIsFront(false);
-
         mCamera = Camera.open(cameraId);
         mPictureSizeList.clear();
         mPictureSizeList = mCamera.getParameters().getSupportedPictureSizes();
@@ -239,6 +248,7 @@ public class CameraActivity extends Activity{
                     protected void onPostExecute(Boolean saved) {
                         progressDialog.dismiss();
                         if (saved) {
+                            //HANDLE SUCCESS
                             Toast.makeText(mContext, "Picture saved", Toast.LENGTH_LONG).show();
                             ExifInterface ei = null;
                             try {
@@ -247,8 +257,11 @@ public class CameraActivity extends Activity{
                                 e.printStackTrace();
                             }
                             int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+                            Intent in = new Intent(mContext, ImageReviewActivity.class);
+                            in.putExtra("imagePath", lastImagePath);
+                            startActivity(in);
                             Log.d("sdasd:", orientation + "");
-                            //HANDLE SUCCESS
+
                         } else {
                             Toast.makeText(mContext,"Error on save", Toast.LENGTH_LONG).show();
                             //HANDLE ERROR
@@ -264,23 +277,26 @@ public class CameraActivity extends Activity{
         };
         return picture;
     }
+
+
+
     private String lastImagePath = "";
     private boolean writeToDisk(byte[] data){
         boolean saved = false;
-
         try {
             File pictureFile = getOutputMediaFile();
             if (pictureFile == null) {
-                lastImagePath = pictureFile.getPath();
-                return saved;
+//                lastImagePath = pictureFile.getAbsolutePath();
+            return saved;
             }
             //write the file
             FileOutputStream fos = new FileOutputStream(pictureFile);
             Log.w("data path","" + pictureFile.getAbsolutePath());
-            Log.w("data path","" + pictureFile.getPath());
+//            Log.w("data path","" + pictureFile.to);
             Log.w("data path","" + pictureFile.getCanonicalPath());
             fos.write(data);
             fos.close();
+
             saved = true;
         }
         catch (FileNotFoundException e) {
@@ -295,7 +311,7 @@ public class CameraActivity extends Activity{
     /**
      * create directory fo the picture
      */
-    private static File getOutputMediaFile() {
+    private File getOutputMediaFile() {
         //make a new file directory inside the "sdcard" folder
         File mediaStorageDir = new File("/sdcard/", "JCG Camera");
 
@@ -309,6 +325,8 @@ public class CameraActivity extends Activity{
 
         //take the current timeStamp
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        lastImagePath =  Environment.getExternalStorageDirectory()
+                +"/"+"JCG Camera/IMG_" + timeStamp + ".jpg";
         File mediaFile;
         //and make a media file:
         mediaFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
@@ -423,6 +441,7 @@ public class CameraActivity extends Activity{
                 parameters.setPreviewFpsRange(30, 35);
                 parameters.setAntibanding(Camera.Parameters.ANTIBANDING_AUTO);
                 parameters.setPictureFormat(ImageFormat.JPEG);
+
                 if(!cameraFront) parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
 
                 parameters.setPictureSize(pictureSize.width, pictureSize.height);

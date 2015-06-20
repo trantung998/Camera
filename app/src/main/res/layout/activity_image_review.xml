@@ -5,12 +5,12 @@
     android:orientation="vertical"
     tools:context="tungt.demo.camera.activity.ImageReviewActivity">
 
-    <tungt.demo.camera.camera.SquareImageView
+    <ImageView
         android:id="@+id/imageview"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
         android:src="@mipmap/img_01"
-        android:scaleType="matrix"
+        android:scaleType="centerInside"
         android:layout_gravity="center_horizontal" />
 
 </LinearLayout>
