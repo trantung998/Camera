@@ -1,4 +1,4 @@
-package tungt.demo.camera;
+package tungt.demo.camera.camera;
 
 /**
  * Created by 9i-tungt on 6/18/2015.

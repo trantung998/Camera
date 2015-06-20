@@ -1,4 +1,4 @@
-package tungt.demo.camera;
+package tungt.demo.camera.camera;
 
 import android.app.Activity;
 import android.graphics.Color;

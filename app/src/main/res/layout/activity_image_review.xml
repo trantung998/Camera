@@ -3,9 +3,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="tungt.demo.camera.ImageReviewActivity">
+    tools:context="tungt.demo.camera.activity.ImageReviewActivity">
 
-    <tungt.demo.camera.SquareImageView
+    <tungt.demo.camera.camera.SquareImageView
         android:id="@+id/imageview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

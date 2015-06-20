@@ -3,7 +3,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
 
-    <tungt.demo.camera.DrawingView
+    <tungt.demo.camera.camera.DrawingView
         android:id="@+id/drawing_surface"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>

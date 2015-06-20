@@ -1,10 +1,12 @@
-package tungt.demo.camera;
+package tungt.demo.camera.activity;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -18,6 +20,10 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
+
+import tungt.demo.camera.R;
+import tungt.demo.camera.activity.CameraActivity;
+import tungt.demo.camera.activity.ImageReviewActivity;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -33,7 +39,20 @@ public class MainActivity extends ActionBarActivity {
         btn_Opencamera.setOnClickListener(openCameraOnClick);
         btn_OpenGallery = (Button)findViewById(R.id.btn_menu_select);
         btn_OpenGallery.setOnClickListener(openGalleryOnClick);
+        ImageView imgView = (ImageView)findViewById(R.id.image_view_menu);
+        Bitmap bm = ((BitmapDrawable)imgView.getDrawable()).getBitmap();
+        Bitmap bm2 = Bitmap.createBitmap(bm,bm.getWidth()/2,bm.getHeight()/2,bm.getWidth()/2,bm.getHeight()/2);
+        imgView.setImageBitmap(bm2);
+//        imgView.setImageBitmap(selectedImage);
 
+    }
+
+    public Bitmap loadBitmapFromView(View v) {
+        Bitmap b = Bitmap.createBitmap(v.getLayoutParams().width, v.getLayoutParams().height, Bitmap.Config.ARGB_8888);
+        Canvas c = new Canvas(b);
+        v.layout(0, 0, v.getLayoutParams().width, v.getLayoutParams().height);
+        v.draw(c);
+        return b;
     }
 
     View.OnClickListener openCameraOnClick = new View.OnClickListener() {

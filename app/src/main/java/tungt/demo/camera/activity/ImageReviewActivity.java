@@ -1,4 +1,4 @@
-package tungt.demo.camera;
+package tungt.demo.camera.activity;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
+
+import tungt.demo.camera.R;
 
 
 public class ImageReviewActivity extends ActionBarActivity {

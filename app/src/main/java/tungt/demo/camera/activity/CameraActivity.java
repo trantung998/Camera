@@ -1,6 +1,7 @@
-package tungt.demo.camera;
+package tungt.demo.camera.activity;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
@@ -29,6 +30,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import tungt.demo.camera.camera.CameraPreview;
+import tungt.demo.camera.camera.DrawingView;
+import tungt.demo.camera.R;
+
 /**
  * Created by 9i-tungt on 6/17/2015.
  */
@@ -44,10 +49,14 @@ public class CameraActivity extends Activity{
     private boolean cameraFront = false;
 
     private AlertDialog imgaeQualityDialog;
-    private int currentQuality = 0;
+    private int currentQuality = -1;
 
     protected List<Camera.Size> mPreviewSizeList;
     protected List<Camera.Size> mPictureSizeList;
+
+    private CharSequence[] qualityItem;
+
+    ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,9 +84,13 @@ public class CameraActivity extends Activity{
         btnCameraSettings = (ImageView)findViewById(R.id.button_settings);
         btnCameraSettings.setOnClickListener(settingCameraOnClickListener);
         refreshCamera();
+//        DrawingView drawingView = (DrawingView)findViewById(R.id.drawing_surface);
+//        mPreview.setDrawingView(drawingView);
+        //setup progress dialog
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Processing...");
+        progressDialog.setCancelable(false);
 
-        DrawingView drawingView = (DrawingView)findViewById(R.id.drawing_surface);
-        mPreview.setDrawingView(drawingView);
     }
 
     @Override
@@ -92,6 +105,7 @@ public class CameraActivity extends Activity{
     View.OnClickListener captureOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            progressDialog.show();
             mCamera.takePicture(null,null, mIpgPictureCallback);
         }
     };
@@ -116,7 +130,13 @@ public class CameraActivity extends Activity{
         @Override
         public void onClick(View v) {
             //cần sửa lại để tự động setup các giá trị này
-            final CharSequence[] items = {"SD(640x480)","HD(1280x720)","FHD(1920x1080)","Max(4128*3096)"};
+            final CharSequence[] items = new CharSequence[mPictureSizeList.size()];
+            for (int i = 0; i < mPictureSizeList.size(); i++) {
+                Camera.Size size = mPictureSizeList.get(i);
+                items[i] = "Image ("+size.height+"x"+size.width+")";
+            }
+//                    {"SD(640x480)","HD(1280x720)","FHD(1920x1080)","Max(4128*3096)"};
+
             // Creating and Building the Dialog
             AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
             builder.setTitle("Select The Image Quality");
@@ -187,7 +207,12 @@ public class CameraActivity extends Activity{
             }
         }
         mPreview.setIsFront(false);
+
         mCamera = Camera.open(cameraId);
+        mPictureSizeList.clear();
+        mPictureSizeList = mCamera.getParameters().getSupportedPictureSizes();
+        currentQuality   = mPictureSizeList.size()/2;
+
         mIpgPictureCallback = getPictureCallback();
         mPreview.refreshCamera(mCamera);
     }
@@ -212,6 +237,7 @@ public class CameraActivity extends Activity{
 
                     @Override
                     protected void onPostExecute(Boolean saved) {
+                        progressDialog.dismiss();
                         if (saved) {
                             Toast.makeText(mContext, "Picture saved", Toast.LENGTH_LONG).show();
                             ExifInterface ei = null;
@@ -381,18 +407,24 @@ public class CameraActivity extends Activity{
                     Toast.makeText(this, "No front facing camera found.", Toast.LENGTH_LONG).show();
                     btnSwitchCamera.setVisibility(View.GONE);
                 }
-
-                mCamera = Camera.open(findBackCamera());
+                int camId = Camera.CameraInfo.CAMERA_FACING_BACK;
+                if(cameraFront) camId = Camera.CameraInfo.CAMERA_FACING_FRONT;
+                mCamera = Camera.open(camId);
+                //set parameters
                 Camera.Parameters parameters =  mCamera.getParameters();
                 mPreviewSizeList = parameters.getSupportedPreviewSizes();
                 mPictureSizeList = parameters.getSupportedPictureSizes();
-                Camera.Size pictureSize = mPictureSizeList.get(0);
+                if(currentQuality == -1) currentQuality = mPictureSizeList.size()/2;
+
+                Camera.Size pictureSize = mPictureSizeList.get(currentQuality);
+
                 parameters.setJpegQuality(100);
                 parameters.setJpegThumbnailQuality(75);
                 parameters.setPreviewFpsRange(30, 35);
                 parameters.setAntibanding(Camera.Parameters.ANTIBANDING_AUTO);
                 parameters.setPictureFormat(ImageFormat.JPEG);
-                parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+                if(!cameraFront) parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+
                 parameters.setPictureSize(pictureSize.width, pictureSize.height);
 
                 if (parameters.getMaxNumMeteringAreas() > 0){ // check that metering areas are supported
