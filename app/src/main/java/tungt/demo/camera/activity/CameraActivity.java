@@ -6,15 +6,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
-import android.graphics.Matrix;
-import android.graphics.Rect;
 import android.hardware.Camera;
 import android.media.ExifInterface;
-import android.media.MediaScannerConnection;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -33,13 +27,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import tungt.demo.camera.camera.CameraPreview;
-import tungt.demo.camera.camera.DrawingView;
 import tungt.demo.camera.R;
+import tungt.demo.camera.camera.CameraPreview;
 
 /**
  * Created by 9i-tungt on 6/17/2015.
@@ -438,23 +430,20 @@ public class CameraActivity extends Activity{
 
                 parameters.setJpegQuality(100);
                 parameters.setJpegThumbnailQuality(75);
-                parameters.setPreviewFpsRange(30, 35);
+//                parameters.setPreviewFpsRange(30, 35);
                 parameters.setAntibanding(Camera.Parameters.ANTIBANDING_AUTO);
                 parameters.setPictureFormat(ImageFormat.JPEG);
-
                 if(!cameraFront) parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-
                 parameters.setPictureSize(pictureSize.width, pictureSize.height);
-
-                if (parameters.getMaxNumMeteringAreas() > 0){ // check that metering areas are supported
-                    List<Camera.Area> meteringAreas = new ArrayList<>();
-
-                    Rect areaRect1 = new Rect(-100, -100, 100, 100);    // specify an area in center of image
-                    meteringAreas.add(new Camera.Area(areaRect1, 600)); // set weight to 60%
-                    Rect areaRect2 = new Rect(800, -1000, 1000, -800);  // specify an area in upper right of image
-                    meteringAreas.add(new Camera.Area(areaRect2, 400)); // set weight to 40%
-                    parameters.setMeteringAreas(meteringAreas);
-                }
+//                if (parameters.getMaxNumMeteringAreas() > 0){ // check that metering areas are supported
+//                    List<Camera.Area> meteringAreas = new ArrayList<>();
+//
+//                    Rect areaRect1 = new Rect(-100, -100, 100, 100);    // specify an area in center of image
+//                    meteringAreas.add(new Camera.Area(areaRect1, 600)); // set weight to 60%
+//                    Rect areaRect2 = new Rect(800, -1000, 1000, -800);  // specify an area in upper right of image
+//                    meteringAreas.add(new Camera.Area(areaRect2, 400)); // set weight to 40%
+//                    parameters.setMeteringAreas(meteringAreas);
+//                }
 
                 mCamera.setParameters(parameters);
                 mIpgPictureCallback = getPictureCallback();
