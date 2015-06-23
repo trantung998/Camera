@@ -430,8 +430,11 @@ public class CameraActivity extends Activity{
 
                 parameters.setJpegQuality(100);
                 parameters.setJpegThumbnailQuality(75);
+
 //                parameters.setPreviewFpsRange(30, 35);
+
                 parameters.setAntibanding(Camera.Parameters.ANTIBANDING_AUTO);
+
                 parameters.setPictureFormat(ImageFormat.JPEG);
                 if(!cameraFront) parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
                 parameters.setPictureSize(pictureSize.width, pictureSize.height);
@@ -448,7 +451,20 @@ public class CameraActivity extends Activity{
                 mCamera.setParameters(parameters);
                 mIpgPictureCallback = getPictureCallback();
                 mPreview.refreshCamera(mCamera);
+//                paraListsSupport(parameters);
             }
+        }
+    }
+
+    void paraListsSupport(Camera.Parameters parameters){
+       List<int[]> sppreviewFpsRange = parameters.getSupportedPreviewFpsRange();
+        for(int[] sp: sppreviewFpsRange){
+            Log.d("spRange",sp[0] + "," + sp[1]);
+        }
+
+        List<String> sp1 = parameters.getSupportedColorEffects();
+        for(String sp: sp1){
+            Log.d("Color Effect",sp);
         }
     }
 
