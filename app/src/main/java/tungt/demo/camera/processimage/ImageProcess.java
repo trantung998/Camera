@@ -13,7 +13,7 @@ public class ImageProcess {
         int hMid = height / 2;
         int wMid = width / 2;
         int edgeMid = edgeOfsquare/2;
-        int top     = hMid - edgeMid;
+        int top     = 0;               //top of source image
         int left    = wMid - edgeMid;
 
         Bitmap bm2 = Bitmap.createBitmap(
