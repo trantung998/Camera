@@ -7,4 +7,5 @@
 
     <string name="btn_take_image">Open Camera</string>
     <string name="chose_image">Open Gallery</string>
+    <string name="text_1">Image Review</string>
 </resources>

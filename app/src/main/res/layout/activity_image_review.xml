@@ -5,12 +5,24 @@
     android:orientation="vertical"
     tools:context="tungt.demo.camera.activity.ImageReviewActivity">
 
-    <ImageView
-        android:id="@+id/imageview"
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/text_1"
+        android:textSize="30dp"
+        android:layout_gravity="center_horizontal"/>
+
+    <LinearLayout
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:src="@mipmap/img_01"
-        android:scaleType="centerInside"
-        android:layout_gravity="center_horizontal" />
+        android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/imageview"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:src="@mipmap/img_01"
+            android:scaleType="centerInside"
+            android:layout_alignParentTop="true"/>
+    </LinearLayout>
+
 
 </LinearLayout>

@@ -251,6 +251,7 @@ public class CameraActivity extends Activity{
                             int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
                             Intent in = new Intent(mContext, ImageReviewActivity.class);
                             in.putExtra("imagePath", lastImagePath);
+                            in.putExtra("size",cameraPreview.getMeasuredWidth());
                             startActivity(in);
                             Log.d("sdasd:", orientation + "");
 

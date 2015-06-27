@@ -23,13 +23,17 @@ import tungt.demo.camera.processimage.ImageProcess;
 public class ImageReviewActivity extends ActionBarActivity {
     ImageView mImageReview;
     String imagePath;
+    Bitmap thumbnail;
+    int size;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_review);
         mImageReview = (ImageView)findViewById(R.id.imageview);
-        imagePath = getIntent().getExtras().getString("imagePath");
-        Bitmap thumbnail = fixImageExif(imagePath);
+        imagePath    = getIntent().getExtras().getString("imagePath");
+        size         = getIntent().getExtras().getInt("size", 0);
+
+        fixImageExif(imagePath);
 //        mImageReview.setImageBitmap(thumbnail);
 
         AsyncTask<Bitmap,Void, Bitmap> task = new AsyncTask<Bitmap, Void, Bitmap>() {
@@ -49,9 +53,15 @@ public class ImageReviewActivity extends ActionBarActivity {
         task.execute(thumbnail);
     }
 
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        thumbnail.recycle();
+    }
+
     public Bitmap crop(Bitmap _bm)
     {
-        return ImageProcess.squareCropv2(_bm);
+        return ImageProcess.squareCropv2(_bm, size);
     }
 
     @Override
@@ -76,8 +86,14 @@ public class ImageReviewActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public Bitmap fixImageExif(String filePath){
-        Bitmap myBitmap = BitmapFactory.decodeFile(filePath);
+    public void fixImageExif(String filePath){
+
+        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+        bmOptions.inJustDecodeBounds = false;
+        bmOptions.inSampleSize = 2;
+        bmOptions.inPurgeable = true ;
+
+        thumbnail = BitmapFactory.decodeFile(filePath,bmOptions);
         try {
             ExifInterface exif = new ExifInterface(filePath);
             int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, 1);
@@ -92,10 +108,9 @@ public class ImageReviewActivity extends ActionBarActivity {
             else if (orientation == 8) {
                 matrix.postRotate(270);
             }
-            myBitmap = Bitmap.createBitmap(myBitmap, 0, 0, myBitmap.getWidth(), myBitmap.getHeight(), matrix, true); // rotating bitmap
+            thumbnail = Bitmap.createBitmap(thumbnail, 0, 0, thumbnail.getWidth(), thumbnail.getHeight(), matrix, true); // rotating bitmap
         }
         catch (Exception e) {
         }
-        return myBitmap;
     }
 }
